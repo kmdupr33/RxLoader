@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.philosophicalhacker.lib.RxLoader;
+import com.squareup.leakcanary.LeakCanary;
 
 import java.util.List;
 
@@ -33,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        LeakCanary.install(getApplication());
         StoryApiService storyApiService = new Retrofit.Builder()
                 .baseUrl("https://hacker-news.firebaseio.com/v0/")
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
