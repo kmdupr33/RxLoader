@@ -10,7 +10,7 @@ android {
         minSdkVersion 11
         targetSdkVersion 24
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -27,18 +27,18 @@ bintray {
     user = System.getenv('BINTRAY_USER')
     key = System.getenv('BINTRAY_KEY')
     pkg {
-        repo = 'generic'
-        name = 'rxloader'
-        userOrg = 'bintray_user'
+        repo = 'RxLoader'
+        name = 'com.philosophicalhacker.rxloader:rxloader'
+        userOrg = user
         licenses = ['MIT']
         vcsUrl = 'https://github.com/kmdupr33/RxLoader'
         version {
-            name = '1.0.0'
+            name = android.defaultConfig.versionName
         }
     }
     filesSpec {
-        from 'build/outputs/lib-release.aar'
-        into "${version}/"
+        from 'build/outputs/aar/lib-release.aar', '../pom.xml'
+        into "${android.defaultConfig.versionName}/"
     }
 }
 
