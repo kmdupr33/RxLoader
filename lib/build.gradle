@@ -1,6 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.jfrog.bintray'
-
+apply plugin: 'com.github.dcendents.android-maven'
 
 android {
     compileSdkVersion 24
@@ -23,22 +23,59 @@ android {
     }
 }
 
+group = 'com.philosophicalhacker.rxloader'
+version = '0.1.0'
+project.archivesBaseName = 'rxloader'
+
+install {
+    repositories.mavenInstaller {
+        pom.project {
+            name 'RxLoader'
+            description 'A tiny data-loading library for android that leverages Android loaders with RxJava'
+            url 'https://github.com/kmdupr33/Rxloader'
+            inceptionYear '2016'
+
+            packaging 'aar'
+            groupId 'com.philosophicalhacker.rxloader'
+            artifactId 'rxloader'
+            version '0.1.0'
+
+            licenses {
+                license {
+                    name 'The Apache Software License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution 'repo'
+                }
+            }
+
+            scm {
+                connection 'https://github.com/kmdupr33/Rxloader.git'
+                url 'https://github.com/kmdupr33/Rxloader'
+
+            }
+            developers {
+                developer {
+                    name 'Matt Dupree'
+                }
+            }
+        }
+    }
+}
+
+
 bintray {
     user = System.getenv('BINTRAY_USER')
     key = System.getenv('BINTRAY_KEY')
+    configurations = ['archives']
     pkg {
         repo = 'RxLoader'
+        userOrg = System.getenv('BINTRAY_USER')
         name = 'com.philosophicalhacker.rxloader:rxloader'
-        userOrg = user
-        licenses = ['MIT']
+        licenses = ['Apache-2.0']
         vcsUrl = 'https://github.com/kmdupr33/RxLoader'
         version {
             name = android.defaultConfig.versionName
         }
-    }
-    filesSpec {
-        from 'build/outputs/aar/lib-release.aar', '../pom.xml'
-        into "${android.defaultConfig.versionName}/"
     }
 }
 
