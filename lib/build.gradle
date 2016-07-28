@@ -1,6 +1,5 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.jfrog.bintray'
-apply plugin: 'maven'
 apply plugin: 'maven-publish'
 
 android {
@@ -26,8 +25,6 @@ android {
 
 group = 'com.philosophicalhacker.rxloader'
 version = '0.1.0'
-
-apply plugin: 'maven-publish'
 
 publishing {
     publications {
