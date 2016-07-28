@@ -31,7 +31,7 @@ publishing {
         rxloader(MavenPublication) {
             groupId 'com.philosophicalhacker.rxloader'
             artifactId 'rxloader'
-            version '0.1.0'
+            version android.defaultConfig.versionName
             artifact("$buildDir/outputs/aar/lib-release.aar")
         }
     }
