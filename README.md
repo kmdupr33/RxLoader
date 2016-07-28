@@ -2,7 +2,7 @@
 
 # RxLoader
 
-`compose()` your `Observable`s into ones that load data that's cached across activity orientation changes without leaking your `Activity` and without you have to worry about unsubscribing
+`compose()` your `Observable`s into ones that load data that's cached across activity orientation changes without leaking your `Activity` and without you having to worry about unsubscribing
 
 RxLoader accomplishes this by building on top of [Android Loaders](https://developer.android.com/guide/components/loaders.html), so the library is super lightweight (currently less than 150 LOC)
 

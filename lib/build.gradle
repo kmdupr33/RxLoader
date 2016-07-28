@@ -26,13 +26,19 @@ android {
 group = 'com.philosophicalhacker.rxloader'
 version = '0.1.0'
 
+task sourceJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier "source"
+}
+
 publishing {
     publications {
         rxloader(MavenPublication) {
             groupId 'com.philosophicalhacker.rxloader'
             artifactId 'rxloader'
             version android.defaultConfig.versionName
-            artifact("$buildDir/outputs/aar/lib-release.aar")
+            artifact file("$buildDir/outputs/aar/lib-release.aar")
+            artifact sourceJar
         }
     }
 }
