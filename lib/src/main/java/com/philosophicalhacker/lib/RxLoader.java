@@ -6,9 +6,10 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 
+import rx.AsyncEmitter;
 import rx.Observable;
 import rx.Observer;
-import rx.Subscriber;
+import rx.functions.Action1;
 
 /**
  * Created by mattdupree on 7/23/16.
@@ -21,21 +22,21 @@ public class RxLoader {
     }
 
     public static <T> Observable.Transformer<T, T> from(final AppCompatActivity activity,
-                                                        final int id) {
-        return from(activity, id, false);
-    }
-
-    public static <T> Observable.Transformer<T, T> from(final AppCompatActivity activity,
                                                         final int id, final boolean forceReload) {
         return new Observable.Transformer<T, T>() {
             @Override
             public Observable<T> call(Observable<T> tObservable) {
-                return Observable.create(
-                        new LoaderCallbackOnSubscribeAdapter<T>(tObservable, activity,
-                                                                activity.getSupportLoaderManager(),
-                                                                id, forceReload));
+                return Observable.fromAsync(
+                        new LoaderCallbackAsyncEmitter<>(tObservable, activity,
+                                activity.getSupportLoaderManager(),
+                                id, forceReload), AsyncEmitter.BackpressureMode.DROP);
             }
         };
+    }
+
+    public static <T> Observable.Transformer<T, T> from(final AppCompatActivity activity,
+                                                        final int id) {
+        return from(activity, id, false);
     }
 
     private static class ObservableLoader<T> extends Loader<T> {
@@ -76,17 +77,17 @@ public class RxLoader {
         }
     }
 
-    private static class LoaderCallbackOnSubscribeAdapter<T> implements Observable.OnSubscribe<T> {
+    private static class LoaderCallbackAsyncEmitter<T> implements Action1<AsyncEmitter<T>> {
         private final Observable<T> mTObservable;
         private final Context mContext;
         private final LoaderManager mLoaderManager;
         private final int mId;
         private final boolean mForceReload;
 
-        LoaderCallbackOnSubscribeAdapter(Observable<T> tObservable, Context context,
-                                         LoaderManager loaderManager,
-                                         int id,
-                                         boolean forceReload) {
+        LoaderCallbackAsyncEmitter(Observable<T> tObservable, Context context,
+                                   LoaderManager loaderManager,
+                                   int id,
+                                   boolean forceReload) {
             mTObservable = tObservable;
             mContext = context;
             mLoaderManager = loaderManager;
@@ -94,40 +95,39 @@ public class RxLoader {
             mForceReload = forceReload;
         }
 
-
         @Override
-        public void call(final Subscriber<? super T> subscriber) {
+        public void call(final AsyncEmitter<T> emitter) {
             final Loader<T> tLoader
                     = mLoaderManager.initLoader(mId, null,
-                                                new LoaderManager.LoaderCallbacks<T>() {
-                                                    @Override
-                                                    public Loader<T> onCreateLoader(
-                                                            int id,
-                                                            Bundle args) {
-                                                        return new ObservableLoader<>(
-                                                                mContext,
-                                                                mTObservable);
-                                                    }
+                    new LoaderManager.LoaderCallbacks<T>() {
+                        @Override
+                        public Loader<T> onCreateLoader(
+                                int id,
+                                Bundle args) {
+                            return new ObservableLoader<>(
+                                    mContext,
+                                    mTObservable);
+                        }
 
-                                                    @Override
-                                                    public void onLoadFinished(
-                                                            Loader<T> loader,
-                                                            T data) {
-                                                        final Throwable error = ((ObservableLoader) loader).mError;
-                                                        if (error != null) {
-                                                            subscriber.onError(
-                                                                    error);
-                                                        } else {
-                                                            subscriber.onNext(data);
-                                                            subscriber.onCompleted();
-                                                        }
-                                                    }
+                        @Override
+                        public void onLoadFinished(
+                                Loader<T> loader,
+                                T data) {
+                            final Throwable error = ((ObservableLoader) loader).mError;
+                            if (error != null) {
+                                emitter.onError(
+                                        error);
+                            } else {
+                                emitter.onNext(data);
+                                emitter.onCompleted();
+                            }
+                        }
 
-                                                    @Override
-                                                    public void onLoaderReset(
-                                                            Loader<T> loader) {
-                                                    }
-                                                });
+                        @Override
+                        public void onLoaderReset(
+                                Loader<T> loader) {
+                        }
+                    });
             if (mForceReload) {
                 tLoader.forceLoad();
             }
