@@ -6,7 +6,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 
-import rx.AsyncEmitter;
+import rx.Emitter;
 import rx.Observable;
 import rx.Observer;
 import rx.functions.Action1;
@@ -26,10 +26,10 @@ public class RxLoader {
         return new Observable.Transformer<T, T>() {
             @Override
             public Observable<T> call(Observable<T> tObservable) {
-                return Observable.fromAsync(
-                        new LoaderCallbackAsyncEmitter<>(tObservable, activity,
+                return Observable.fromEmitter(
+		                new LoaderCallbackAsyncEmitter<>(tObservable, activity,
                                 activity.getSupportLoaderManager(),
-                                id, forceReload), AsyncEmitter.BackpressureMode.DROP);
+                                id, forceReload), Emitter.BackpressureMode.DROP);
             }
         };
     }
@@ -77,7 +77,7 @@ public class RxLoader {
         }
     }
 
-    private static class LoaderCallbackAsyncEmitter<T> implements Action1<AsyncEmitter<T>> {
+    private static class LoaderCallbackAsyncEmitter<T> implements Action1<Emitter<T>> {
         private final Observable<T> mTObservable;
         private final Context mContext;
         private final LoaderManager mLoaderManager;
@@ -96,7 +96,7 @@ public class RxLoader {
         }
 
         @Override
-        public void call(final AsyncEmitter<T> emitter) {
+        public void call(final Emitter<T> emitter) {
             final Loader<T> tLoader
                     = mLoaderManager.initLoader(mId, null,
                     new LoaderManager.LoaderCallbacks<T>() {
