@@ -95,42 +95,52 @@ public class RxLoader {
             mForceReload = forceReload;
         }
 
-        @Override
-        public void call(final Emitter<T> emitter) {
-            final Loader<T> tLoader
-                    = mLoaderManager.initLoader(mId, null,
-                    new LoaderManager.LoaderCallbacks<T>() {
-                        @Override
-                        public Loader<T> onCreateLoader(
-                                int id,
-                                Bundle args) {
-                            return new ObservableLoader<>(
-                                    mContext,
-                                    mTObservable);
-                        }
+@Override
+public void call(final Emitter<T> emitter) {
+    synchronized( mLoaderManager )
+    {
+        final Loader<T> tLoader
+		        = mLoaderManager.initLoader( mId, null,
+		                                     new LoaderManager.LoaderCallbacks<T>()
+		                                     {
+			                                     @Override
+			                                     public Loader<T> onCreateLoader(
+					                                                                    int id,
+					                                                                    Bundle args )
+			                                     {
+				                                     return new ObservableLoader<>(
+						                                                                  mContext,
+						                                                                  mTObservable );
+			                                     }
 
-                        @Override
-                        public void onLoadFinished(
-                                Loader<T> loader,
-                                T data) {
-                            final Throwable error = ((ObservableLoader) loader).mError;
-                            if (error != null) {
-                                emitter.onError(
-                                        error);
-                            } else {
-                                emitter.onNext(data);
-                                emitter.onCompleted();
-                            }
-                        }
+			                                     @Override
+			                                     public void onLoadFinished(
+					                                                               Loader<T> loader,
+					                                                               T data )
+			                                     {
+				                                     final Throwable error = ((ObservableLoader) loader).mError;
+				                                     if( error != null )
+				                                     {
+					                                     emitter.onError(
+							                                     error );
+				                                     }
+				                                     else
+				                                     {
+					                                     emitter.onNext( data );
+					                                     emitter.onCompleted();
+				                                     }
+			                                     }
 
-                        @Override
-                        public void onLoaderReset(
-                                Loader<T> loader) {
-                        }
-                    });
-            if (mForceReload) {
-                tLoader.forceLoad();
-            }
+			                                     @Override
+			                                     public void onLoaderReset(
+					                                                              Loader<T> loader )
+			                                     {
+			                                     }
+		                                     } );
+        if (mForceReload) {
+	        tLoader.forceLoad();
         }
+    }
+}
     }
 }
