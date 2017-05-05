@@ -14,13 +14,19 @@ import io.reactivex.functions.Consumer;
 
 public class RxLoader {
 
-  public static <T> ObservableTransformer<T, T> from(LoaderManager loaderManager,
-      final Context context) {
-    return from(loaderManager, context, 0, false);
+  private final Context context;
+  private final LoaderManager loaderManager;
+
+  public RxLoader(Context context, LoaderManager loaderManager) {
+    this.context = context;
+    this.loaderManager = loaderManager;
   }
 
-  public static <T> ObservableTransformer<T, T> from(final LoaderManager loaderManager,
-      final Context context, final int id, final boolean forceReload) {
+  public <T> ObservableTransformer<T, T> makeObservableTransformer() {
+    return makeObservableTransformer(0, false);
+  }
+
+  public <T> ObservableTransformer<T, T> makeObservableTransformer(final int id, final boolean forceReload) {
     return new ObservableTransformer<T, T>() {
       @Override public ObservableSource<T> apply(@NonNull Observable<T> upstream) {
         return Observable.create(
@@ -31,19 +37,18 @@ public class RxLoader {
     };
   }
 
-  public static <T> ObservableTransformer<T, T> from(final LoaderManager loaderManager,
-      Context context, final int id) {
-    return from(loaderManager, context, id, false);
+  public <T> ObservableTransformer<T, T> makeObservableTransformer(final int id) {
+    return makeObservableTransformer(id, false);
   }
 
   private static class ObservableLoader<T> extends Loader<T> {
 
-    private final Observable<T> mTObservable;
-    private Throwable mError;
+    private final Observable<T> upstreamObservable;
+    private Throwable error;
 
-    ObservableLoader(Context context, Observable<T> tObservable) {
+    ObservableLoader(Context context, Observable<T> upstreamObservable) {
       super(context);
-      mTObservable = tObservable;
+      this.upstreamObservable = upstreamObservable;
     }
 
     @Override protected void onStartLoading() {
@@ -53,13 +58,13 @@ public class RxLoader {
 
     @Override protected void onForceLoad() {
       super.onForceLoad();
-      mTObservable.subscribe(new Consumer<T>() {
+      upstreamObservable.subscribe(new Consumer<T>() {
         @Override public void accept(@NonNull T t) throws Exception {
           deliverResult(t);
         }
       }, new Consumer<Throwable>() {
         @Override public void accept(@NonNull Throwable throwable) throws Exception {
-          mError = throwable;
+          error = throwable;
           deliverResult(null);
         }
       });
@@ -67,30 +72,30 @@ public class RxLoader {
   }
 
   private static class LoaderCallbackAsyncEmitter<T> implements ObservableOnSubscribe<T> {
-    private final Observable<T> mTObservable;
-    private final Context mContext;
-    private final LoaderManager mLoaderManager;
-    private final int mId;
-    private final boolean mForceReload;
+    private final Observable<T> upstreamObservable;
+    private final Context context;
+    private final LoaderManager loaderManager;
+    private final int id;
+    private final boolean forceReload;
 
     LoaderCallbackAsyncEmitter(Observable<T> tObservable, Context context,
         LoaderManager loaderManager, int id, boolean forceReload) {
-      mTObservable = tObservable;
-      mContext = context;
-      mLoaderManager = loaderManager;
-      mId = id;
-      mForceReload = forceReload;
+      upstreamObservable = tObservable;
+      this.context = context;
+      this.loaderManager = loaderManager;
+      this.id = id;
+      this.forceReload = forceReload;
     }
 
     @Override public void subscribe(@NonNull final ObservableEmitter<T> e) throws Exception {
       final Loader<T> tLoader =
-          mLoaderManager.initLoader(mId, null, new LoaderManager.LoaderCallbacks<T>() {
+          loaderManager.initLoader(id, null, new LoaderManager.LoaderCallbacks<T>() {
             @Override public Loader<T> onCreateLoader(int id, Bundle args) {
-              return new ObservableLoader<>(mContext, mTObservable);
+              return new ObservableLoader<>(context, upstreamObservable);
             }
 
             @Override public void onLoadFinished(Loader<T> loader, T data) {
-              final Throwable error = ((ObservableLoader) loader).mError;
+              final Throwable error = ((ObservableLoader) loader).error;
               if (error != null) {
                 e.onError(error);
               } else {
@@ -102,7 +107,7 @@ public class RxLoader {
             @Override public void onLoaderReset(Loader<T> loader) {
             }
           });
-      if (mForceReload) {
+      if (forceReload) {
         tLoader.forceLoad();
       }
     }
