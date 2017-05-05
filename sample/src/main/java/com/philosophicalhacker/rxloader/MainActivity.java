@@ -1,10 +1,10 @@
 package com.philosophicalhacker.rxloader;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.TextView;
 import com.philosophicalhacker.lib.RxLoader;
 import com.squareup.leakcanary.LeakCanary;
 import io.reactivex.Observable;
@@ -23,12 +23,18 @@ public class MainActivity extends AppCompatActivity {
 
   interface StoryApiService {
     @GET("topstories.json") Observable<List<Integer>> getStories();
+
+    @GET("askstories.json") Observable<List<Integer>> getAskStories();
   }
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
     LeakCanary.install(getApplication());
+    StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+        .detectNetwork()
+        .penaltyDeath()
+        .build());
     final RxLoader rxLoader = new RxLoader(this, getSupportLoaderManager());
     StoryApiService storyApiService = new Retrofit.Builder()
         .baseUrl("https://hacker-news.firebaseio.com/v0/")
@@ -38,8 +44,19 @@ public class MainActivity extends AppCompatActivity {
         .create(StoryApiService.class);
     storyApiService
         .getStories()
-        .compose(rxLoader.<List<Integer>>makeObservableTransformer())
-        .observeOn(AndroidSchedulers.mainThread())
+        .compose(rxLoader.<List<Integer>>makeObservableTransformer(0))
+        .subscribe(new Consumer<List<Integer>>() {
+          @Override public void accept(List<Integer> integers) {
+            ((TextView) findViewById(R.id.helloWorld)).setText(String.valueOf(integers));
+          }
+        }, new Consumer<Throwable>() {
+          @Override public void accept(Throwable throwable) {
+            Log.e(TAG, "call() called with: throwable = [" + throwable + "]");
+          }
+        });
+    storyApiService
+        .getAskStories()
+        .compose(rxLoader.<List<Integer>>makeObservableTransformer(1))
         .subscribe(new Consumer<List<Integer>>() {
           @Override public void accept(List<Integer> integers) {
             Log.d(TAG, "call() called with: integers = [" + integers + "]");
