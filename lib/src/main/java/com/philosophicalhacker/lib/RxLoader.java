@@ -1,6 +1,7 @@
 package com.philosophicalhacker.lib;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -9,8 +10,10 @@ import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.ObservableSource;
 import io.reactivex.ObservableTransformer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 
 public class RxLoader {
 
@@ -26,13 +29,14 @@ public class RxLoader {
     return makeObservableTransformer(0, false);
   }
 
-  public <T> ObservableTransformer<T, T> makeObservableTransformer(final int id, final boolean forceReload) {
+  public <T> ObservableTransformer<T, T> makeObservableTransformer(final int id,
+      final boolean forceReload) {
     return new ObservableTransformer<T, T>() {
       @Override public ObservableSource<T> apply(@NonNull Observable<T> upstream) {
-        return Observable.create(
-            new LoaderCallbackAsyncEmitter<>(upstream, context,
-                loaderManager, id,
-                forceReload));
+        return Observable
+            .create(
+                new LoaderCallbackAsyncEmitter<>(upstream, context, loaderManager, id, forceReload))
+            .observeOn(AndroidSchedulers.mainThread());
       }
     };
   }
@@ -58,16 +62,18 @@ public class RxLoader {
 
     @Override protected void onForceLoad() {
       super.onForceLoad();
-      upstreamObservable.subscribe(new Consumer<T>() {
-        @Override public void accept(@NonNull T t) throws Exception {
-          deliverResult(t);
-        }
-      }, new Consumer<Throwable>() {
-        @Override public void accept(@NonNull Throwable throwable) throws Exception {
-          error = throwable;
-          deliverResult(null);
-        }
-      });
+      upstreamObservable
+          .subscribeOn(Schedulers.from(AsyncTask.THREAD_POOL_EXECUTOR))
+          .subscribe(new Consumer<T>() {
+            @Override public void accept(@NonNull T t) throws Exception {
+              deliverResult(t);
+            }
+          }, new Consumer<Throwable>() {
+            @Override public void accept(@NonNull Throwable throwable) throws Exception {
+              error = throwable;
+              deliverResult(null);
+            }
+          });
     }
   }
 
