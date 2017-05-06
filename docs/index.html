@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta name="generator" content="Hugo 0.19" />
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,400i,700,700i" rel="stylesheet">
+    <style>
+        body {
+            font-family: "Roboto";
+            display: flex;
+            justify-content: center;
+            align-items: center;                        
+            flex-direction: column;            
+        }
+        article {
+            max-width: 700px;
+        }
+    </style>
+    <title>RxLoader</title>
+</head>
+<body>
+    <article>
+        
+
+<p><a href="https://bintray.com/kmdupr33/RxLoader/com.philosophicalhacker.rxloader%3Arxloader/_latestVersion"> <img src="https://api.bintray.com/packages/kmdupr33/RxLoader/com.philosophicalhacker.rxloader%3Arxloader/images/download.svg" alt="Download" /> </a></p>
+
+<h1 id="rxloader">RxLoader</h1>
+
+<p><code>compose()</code> your <code>Observable</code>s and <code>Single</code>s into ones that load data that&rsquo;s cached across activity orientation changes without leaking your <code>Activity</code> and without you having to worry about unsubscribing</p>
+
+<p>RxLoader accomplishes this by building on top of <a href="https://developer.android.com/guide/components/loaders.html">Android Loaders</a>, so the library is super lightweight (only defines 47 methods)</p>
+
+<p>There&rsquo;s a lot of data loading solutions already for Android. I detail why I felt we needed another one <a href="http://www.philosophicalhacker.com/post/rxloader-boilerplate-free-data-loading-with-loaders-and-rxjava">here</a></p>
+
+<h2 id="basic-usage">Basic Usage</h2>
+
+<h3 id="build-gradle">build.gradle</h3>
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span>dependencies {
+  compile <span style="color: #0000FF">&#39;com.philosophicalhacker.rxloader:rxloader:0.4.0&#39;</span>
+}  
+</pre></div>
+
+<h3 id="fooactivity">FooActivity</h3>
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span>@Override
+<span style="color: #000080; font-weight: bold">protected</span> <span style="color: #000080; font-weight: bold">void</span> onCreate(Bundle savedInstanceState) {
+    <span style="color: #000080; font-weight: bold">final</span> RxLoader rxLoader = <span style="color: #000080; font-weight: bold">new</span> RxLoader(<span style="color: #000080; font-weight: bold">this</span>, getSupportLoaderManager());
+    storyApiService
+        .<span style="color: #FF0000">getAskStories</span>()
+        .<span style="color: #FF0000">compose</span>(rxLoader.&lt;List&lt;Integer&gt;&gt;makeSingleTransformer())
+        .<span style="color: #FF0000">subscribe</span>(<span style="color: #000080; font-weight: bold">new</span> Consumer&lt;List&lt;Integer&gt;&gt;() {
+          @Override <span style="color: #000080; font-weight: bold">public</span> <span style="color: #000080; font-weight: bold">void</span> accept(List&lt;Integer&gt; integers) {
+            Log.<span style="color: #FF0000">d</span>(TAG, <span style="color: #0000FF">&quot;call() called with: integers = [&quot;</span> + integers + <span style="color: #0000FF">&quot;]&quot;</span>);
+          }
+        });
+}
+</pre></div>
+
+<p>Notice that you don&rsquo;t have worry about calling <code>subscribeOn</code> or <code>observeOn</code> either. That&rsquo;s handled by RxLoader.</p>
+
+<h2 id="license">License</h2>
+
+<p>Copyright 2017 Kevin Matthew Dupree</p>
+
+<p>Licensed under the Apache License, Version 2.0 (the &ldquo;License&rdquo;); you may not use this file except in compliance with the License. You may obtain a copy of the License at</p>
+
+<p><a href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a></p>
+
+<p>Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an &ldquo;AS IS&rdquo; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.</p>
+
+    </article>
+</body>
+</html>
