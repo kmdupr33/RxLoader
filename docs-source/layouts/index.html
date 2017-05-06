@@ -1,29 +1,43 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,400i,700,700i" rel="stylesheet">
     <style>
-        body {
+        body {            
             font-family: "Roboto";
             display: flex;
             justify-content: center;
-            align-items: center;                        
-            flex-direction: column;            
+            align-items: center;
+            flex-direction: column;
         }
-        article {
-            max-width: 700px;
+
+        pre {
+            overflow: auto;
         }
+        
+        @media (max-width: 500px) {
+            article {                
+                max-width: 95vw;                
+            }
+        }
+        
+        @media (min-width: 501px) {
+            article {
+                max-width: 700px;
+            }
+        }        
     </style>
     <title>RxLoader</title>
 </head>
+
 <body>
     <article>
-        <a href="https://github.com/kmdupr33/RxLoader"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://camo.githubusercontent.com/c6625ac1f3ee0a12250227cf83ce904423abf351/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_left_gray_6d6d6d.png"></a>
         {{.Content}}
     </article>
 </body>
+
 </html>

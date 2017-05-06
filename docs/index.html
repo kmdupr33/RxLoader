@@ -1,40 +1,61 @@
 <!doctype html>
 <html lang="en">
+
 <head>
 	<meta name="generator" content="Hugo 0.19" />
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,400i,700,700i" rel="stylesheet">
     <style>
-        body {
+        body {            
             font-family: "Roboto";
             display: flex;
             justify-content: center;
-            align-items: center;                        
-            flex-direction: column;            
+            align-items: center;
+            flex-direction: column;
         }
-        article {
-            max-width: 700px;
+
+        pre {
+            overflow: auto;
         }
+        
+        @media (max-width: 500px) {
+            article {                
+                max-width: 95vw;                
+            }
+        }
+        
+        @media (min-width: 501px) {
+            article {
+                max-width: 700px;
+            }
+        }        
     </style>
     <title>RxLoader</title>
 </head>
+
 <body>
     <article>
-        <a href="https://github.com/kmdupr33/RxLoader"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://camo.githubusercontent.com/c6625ac1f3ee0a12250227cf83ce904423abf351/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_left_gray_6d6d6d.png"></a>
         
 
 <p><a href="https://bintray.com/kmdupr33/RxLoader/com.philosophicalhacker.rxloader%3Arxloader/_latestVersion"> <img src="https://api.bintray.com/packages/kmdupr33/RxLoader/com.philosophicalhacker.rxloader%3Arxloader/images/download.svg" alt="Download" /> </a></p>
 
 <h1 id="rxloader">RxLoader</h1>
 
-<p><code>compose()</code> your <code>Observable</code>s and <code>Single</code>s into ones that load data that&rsquo;s cached across activity orientation changes without leaking your <code>Activity</code> and without you having to worry about unsubscribing</p>
+<p><code>compose()</code> your <code>Observable</code>s and <code>Single</code>s into ones that load data that&rsquo;s cached across activity orientation changes without leaking your <code>Activity</code> and without you having to worry about unsubscribing.</p>
 
-<p>RxLoader accomplishes this by building on top of <a href="https://developer.android.com/guide/components/loaders.html">Android Loaders</a>, so the library is super lightweight (only defines 47 methods)</p>
+<p>RxLoader accomplishes this by building on top of <a href="https://developer.android.com/guide/components/loaders.html">Android Loaders</a>, so the library is super lightweight (only defines 47 methods).</p>
 
 <p>There&rsquo;s a lot of data loading solutions already for Android. I detail why I felt we needed another one <a href="http://www.philosophicalhacker.com/post/rxloader-boilerplate-free-data-loading-with-loaders-and-rxjava">here</a></p>
+
+<h2 id="code">Code</h2>
+
+<p>Github repo is <a href="https://github.com/kmdupr33/RxLoader">here</a>. Note that it contains <a href="https://github.com/kmdupr33/RxLoader/tree/master/sample">some rough sample code</a>.</p>
+
+<h2 id="javadoc">Javadoc</h2>
+
+<p>Coming Soon</p>
 
 <h2 id="basic-usage">Basic Usage</h2>
 
@@ -73,4 +94,5 @@
 
     </article>
 </body>
+
 </html>

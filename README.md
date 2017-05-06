@@ -2,11 +2,19 @@
 
 # RxLoader
 
-`compose()` your `Observable`s and `Single`s into ones that load data that's cached across activity orientation changes without leaking your `Activity` and without you having to worry about unsubscribing
+`compose()` your `Observable`s and `Single`s into ones that load data that's cached across activity orientation changes without leaking your `Activity` and without you having to worry about unsubscribing.
 
-RxLoader accomplishes this by building on top of [Android Loaders](https://developer.android.com/guide/components/loaders.html), so the library is super lightweight (only defines 47 methods)
+RxLoader accomplishes this by building on top of [Android Loaders](https://developer.android.com/guide/components/loaders.html), so the library is super lightweight (only defines 47 methods).
 
 There's a lot of data loading solutions already for Android. I detail why I felt we needed another one [here](http://www.philosophicalhacker.com/post/rxloader-boilerplate-free-data-loading-with-loaders-and-rxjava)
+
+## Code
+
+Github repo is [here](https://github.com/kmdupr33/RxLoader). Note that it contains [some rough sample code](https://github.com/kmdupr33/RxLoader/tree/master/sample).
+
+## Javadoc
+
+Coming Soon
 
 ## Basic Usage
 
