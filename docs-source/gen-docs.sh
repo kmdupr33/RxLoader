@@ -1,2 +1,2 @@
 hugo -d ../docs
-cp content/_index.md README.md
+cp content/_index.md ../README.md
