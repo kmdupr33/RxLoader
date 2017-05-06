@@ -58,6 +58,12 @@ bintray {
     }
 }
 
+task androidJavadocs(type: Javadoc) {
+    source = android.sourceSets.main.java.source
+    destinationDir = new File('docs-source/static/javadocs/')
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
