@@ -1,20 +1,14 @@
 package com.philosophicalhacker.lib;
 
 import android.content.Context;
-import android.os.AsyncTask;
-import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
-import android.support.v4.content.Loader;
-import android.util.Log;
 import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.ObservableSource;
 import io.reactivex.ObservableTransformer;
-import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.Single;
+import io.reactivex.SingleSource;
+import io.reactivex.SingleTransformer;
 import io.reactivex.annotations.NonNull;
-import io.reactivex.functions.Consumer;
-import io.reactivex.schedulers.Schedulers;
 
 public class RxLoader {
 
@@ -33,11 +27,10 @@ public class RxLoader {
   public <T> ObservableTransformer<T, T> makeObservableTransformer(final int id,
       final boolean forceReload) {
     return new ObservableTransformer<T, T>() {
-      @Override public ObservableSource<T> apply(@NonNull Observable<T> upstream) {
-        return Observable
-            .create(
-                new LoaderCallbackOnSubscribe<>(upstream, context, loaderManager, id, forceReload))
-            .observeOn(AndroidSchedulers.mainThread());
+      @Override public ObservableSource<T> apply(@NonNull final Observable<T> upstream) {
+        return new ReactiveLoaders.LoaderObservable<>(context,
+            new LoadRequest<T>(loaderManager, forceReload, id),
+            new ReactiveType.Observable<>(upstream));
       }
     };
   }
@@ -46,102 +39,22 @@ public class RxLoader {
     return makeObservableTransformer(id, false);
   }
 
-  //------------------------------------------------------------------
-  // ObservableLoader
-  //------------------------------------------------------------------
-  private static class ObservableLoader<T> extends Loader<T> {
-
-    private static final String TAG = ObservableLoader.class.getSimpleName();
-    private final Observable<T> upstreamObservable;
-    private T pendingData;
-    private Throwable error;
-
-    ObservableLoader(Context context, Observable<T> upstreamObservable) {
-      super(context);
-      this.upstreamObservable = upstreamObservable;
-    }
-
-    @Override protected void onStartLoading() {
-      super.onStartLoading();
-      Log.d(TAG, "onStartLoading() called");
-      if (pendingData != null) {
-        Log.d(TAG, "delivering pending data");
-        deliverResult(pendingData);
-        pendingData = null;
-      } else {
-        forceLoad();
-      }
-    }
-
-    @Override protected void onForceLoad() {
-      super.onForceLoad();
-      Log.d(TAG, "onForceLoad() called");
-      upstreamObservable
-          .subscribeOn(Schedulers.from(AsyncTask.THREAD_POOL_EXECUTOR))
-          .subscribe(new Consumer<T>() {
-            @Override public void accept(@NonNull T t) throws Exception {
-              safeDeliverResult(t);
-            }
-          }, new Consumer<Throwable>() {
-            @Override public void accept(@NonNull Throwable throwable) throws Exception {
-              error = throwable;
-              safeDeliverResult(null);
-            }
-          });
-    }
-
-    private void safeDeliverResult(T t) {
-      if (isStarted()) {
-        Log.d(TAG, "delivering result");
-        deliverResult(t);
-      } else {
-        Log.d(TAG, "storing result");
-        pendingData = t;
-      }
-    }
+  public <T> SingleTransformer<T, T> makeSingleTransformer() {
+    return makeSingleTransformer(0, false);
   }
 
-  //------------------------------------------------------------------
-  // LoaderCallbackOnSubscribe
-  //------------------------------------------------------------------
-  private static class LoaderCallbackOnSubscribe<T> implements ObservableOnSubscribe<T> {
-    private final Observable<T> upstreamObservable;
-    private final Context context;
-    private final LoaderManager loaderManager;
-    private final int id;
-    private final boolean forceReload;
+  public <T> SingleTransformer<T, T> makeSingleTransformer(int loaderId) {
+    return makeSingleTransformer(loaderId, false);
+  }
 
-    LoaderCallbackOnSubscribe(Observable<T> upstreamObservable, Context context,
-        LoaderManager loaderManager, int id, boolean forceReload) {
-      this.upstreamObservable = upstreamObservable;
-      this.context = context;
-      this.loaderManager = loaderManager;
-      this.id = id;
-      this.forceReload = forceReload;
-    }
-
-    @Override public void subscribe(@NonNull final ObservableEmitter<T> e) throws Exception {
-      final Loader<T> tLoader =
-          loaderManager.initLoader(id, null, new LoaderManager.LoaderCallbacks<T>() {
-            @Override public Loader<T> onCreateLoader(int id, Bundle args) {
-              return new ObservableLoader<>(context, upstreamObservable);
-            }
-
-            @Override public void onLoadFinished(Loader<T> loader, T data) {
-              final Throwable error = ((ObservableLoader) loader).error;
-              if (error != null) {
-                e.onError(error);
-              } else {
-                e.onNext(data);
-              }
-            }
-
-            @Override public void onLoaderReset(Loader<T> loader) {
-            }
-          });
-      if (forceReload) {
-        tLoader.forceLoad();
+  private <T> SingleTransformer<T, T> makeSingleTransformer(final int loadId,
+      final boolean forceReload) {
+    return new SingleTransformer<T, T>() {
+      @Override public SingleSource<T> apply(@NonNull final Single<T> upstream) {
+        return new ReactiveLoaders.LoaderSingle<>(context,
+            new LoadRequest<T>(loaderManager, forceReload, loadId),
+            new ReactiveType.Single<>(upstream));
       }
-    }
+    };
   }
 }

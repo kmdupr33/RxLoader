@@ -59,14 +59,13 @@ public class MainActivity extends AppCompatActivity {
                      }
                    }, new Consumer<Throwable>() {
                      @Override public void accept(Throwable throwable) {
-                       Log.e(TAG, "call() called with: throwable = [" + throwable + "]");
+                       Log.wtf(TAG, throwable);
                      }
                    });
     // We make two load requests simultaneously to ensure that we don't get an illegal state exception
     storyApiService
         .getAskStories()
-        .compose(rxLoader.<List<Integer>>makeObservableTransformer(1))
-        .delay(1, TimeUnit.SECONDS)
+        .compose(rxLoader.<List<Integer>>makeSingleTransformer(1))
         .subscribe(new Consumer<List<Integer>>() {
           @Override public void accept(List<Integer> integers) {
             Log.d(TAG, "call() called with: integers = [" + integers + "]");
