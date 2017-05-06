@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.util.Log;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
@@ -35,7 +36,7 @@ public class RxLoader {
       @Override public ObservableSource<T> apply(@NonNull Observable<T> upstream) {
         return Observable
             .create(
-                new LoaderCallbackAsyncEmitter<>(upstream, context, loaderManager, id, forceReload))
+                new LoaderCallbackOnSubscribe<>(upstream, context, loaderManager, id, forceReload))
             .observeOn(AndroidSchedulers.mainThread());
       }
     };
@@ -45,9 +46,14 @@ public class RxLoader {
     return makeObservableTransformer(id, false);
   }
 
+  //------------------------------------------------------------------
+  // ObservableLoader
+  //------------------------------------------------------------------
   private static class ObservableLoader<T> extends Loader<T> {
 
+    private static final String TAG = ObservableLoader.class.getSimpleName();
     private final Observable<T> upstreamObservable;
+    private T pendingData;
     private Throwable error;
 
     ObservableLoader(Context context, Observable<T> upstreamObservable) {
@@ -57,36 +63,57 @@ public class RxLoader {
 
     @Override protected void onStartLoading() {
       super.onStartLoading();
-      forceLoad();
+      Log.d(TAG, "onStartLoading() called");
+      if (pendingData != null) {
+        Log.d(TAG, "delivering pending data");
+        deliverResult(pendingData);
+        pendingData = null;
+      } else {
+        forceLoad();
+      }
     }
 
     @Override protected void onForceLoad() {
       super.onForceLoad();
+      Log.d(TAG, "onForceLoad() called");
       upstreamObservable
           .subscribeOn(Schedulers.from(AsyncTask.THREAD_POOL_EXECUTOR))
           .subscribe(new Consumer<T>() {
             @Override public void accept(@NonNull T t) throws Exception {
-              deliverResult(t);
+              safeDeliverResult(t);
             }
           }, new Consumer<Throwable>() {
             @Override public void accept(@NonNull Throwable throwable) throws Exception {
               error = throwable;
-              deliverResult(null);
+              safeDeliverResult(null);
             }
           });
     }
+
+    private void safeDeliverResult(T t) {
+      if (isStarted()) {
+        Log.d(TAG, "delivering result");
+        deliverResult(t);
+      } else {
+        Log.d(TAG, "storing result");
+        pendingData = t;
+      }
+    }
   }
 
-  private static class LoaderCallbackAsyncEmitter<T> implements ObservableOnSubscribe<T> {
+  //------------------------------------------------------------------
+  // LoaderCallbackOnSubscribe
+  //------------------------------------------------------------------
+  private static class LoaderCallbackOnSubscribe<T> implements ObservableOnSubscribe<T> {
     private final Observable<T> upstreamObservable;
     private final Context context;
     private final LoaderManager loaderManager;
     private final int id;
     private final boolean forceReload;
 
-    LoaderCallbackAsyncEmitter(Observable<T> tObservable, Context context,
+    LoaderCallbackOnSubscribe(Observable<T> upstreamObservable, Context context,
         LoaderManager loaderManager, int id, boolean forceReload) {
-      upstreamObservable = tObservable;
+      this.upstreamObservable = upstreamObservable;
       this.context = context;
       this.loaderManager = loaderManager;
       this.id = id;
@@ -106,7 +133,6 @@ public class RxLoader {
                 e.onError(error);
               } else {
                 e.onNext(data);
-                e.onComplete();
               }
             }
 
