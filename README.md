@@ -1,3 +1,7 @@
+# Deprecated
+
+The newer [live data](https://developer.android.com/topic/libraries/architecture/livedata) offers a better solution to this problem. If you're interested in using rx with live data, you can checkout the [live data from reactive streams api](https://developer.android.com/reference/androidx/lifecycle/LiveDataReactiveStreams.html)
+
 [ ![Download](https://api.bintray.com/packages/kmdupr33/RxLoader/com.philosophicalhacker.rxloader%3Arxloader/images/download.svg) ](https://bintray.com/kmdupr33/RxLoader/com.philosophicalhacker.rxloader%3Arxloader/_latestVersion)
 
 # RxLoader
